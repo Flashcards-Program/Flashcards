@@ -1,0 +1,53 @@
+* {
+    font-family: 'Comfortaa', sans-serif;
+}
+
+body {
+    background-color: rgb(128, 128, 128);
+}
+
+h2 {
+    background-color: rgb(160, 160, 160);
+    width: fit-content;
+    height: fit-content;
+    padding: 2px;
+    margin: 2px;
+}
+
+p {
+    background-color: rgb(168, 168, 168);
+    padding: 2px;
+    width: fit-content;
+    height: fit-content;
+}
+
+dl {
+    background-color: rgb(168, 168, 168);
+    padding: 5px;
+    width: fit-content;
+    height: fit-content;
+}
+
+dt {
+    background-color: rgb(190, 190, 190);
+    padding: 1px;
+}
+
+dd {
+    background-color: rgb(205, 205, 205);
+    padding: 1px;
+}
+
+.grid-container {
+    display: inline-grid;
+    grid-column-start: 1;
+    grid-column-end: 2;
+}
+
+#welcome {
+    background-color: rgb(168, 168, 168);
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+    padding: 2px;
+}
