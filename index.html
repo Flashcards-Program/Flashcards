@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>The Crafting Game</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <noscript><h1>Sorry, this website is not available.<br>Please <a href="https://support.google.com/adsense/answer/12654?hl=en">enable scripts</a> or use a different browser.</h1></noscript>
+
+        <div id="game" hidden>
+            <div id="welcome">Welcome to Crafting Game!</div>
+            <h2 id="display">$0</h2>
+
+            <dl>
+                <h3>Items for sale:</h3>
+                <dt>Milk</dt>
+                <dd><button onclick="buy(5, 'milk')">$5.-</button></dd>
+                <dt>Bread</dt>
+                <dd><button onclick="buy(2, 'bread')">$2.-</button></dd>
+                <dt>Plate</dt>
+                <dd><button onclick="buy(3, 'plate')">$3.-</button></dd>
+            </dl>
+            
+            <br>
+
+            <dl> 
+                <h3>Items to sell:</h3>
+                <dt>Milkbread</dt>
+                <dd><button onclick="sell(10, 'milkbread')">$10.-</button></dd>
+                <dt>Milk Sandwich</dt>
+                <dd><button onclick="sell(24, 'milksandwich')">$24.-</button></dd>
+                <dt>Milk Meal</dt>
+                <dd><button onclick="sell(35, 'milkmeal')">$35.-</button></dd>
+                <dt>Cheese Sandwich</dt>
+                <dd><button onclick="sell(15, 'cheesesandwich')">$15.-</button></dd>
+            </dl>
+
+            <br>
+
+            <dl>
+                <h3>Inventory</h3>
+                <dt>Milk</dt>
+                <dd id="milk">0</dd>
+                <dt>Cheese</dt>
+                <dd id="cheese">0</dd>
+                <dt>Bread</dt>
+                <dd id="bread">0</dd>
+                <dt>Plate(s)</dt>
+                <dd id="plate">0</dd>
+                <dt>Milkbread</dt>
+                <dd id="milkbread">0</dd>
+                <dt>Milk Sandwich</dt>
+                <dd id="milksandwich">0</dd>
+                <dt>Milk Meal</dt>
+                <dd id="milkmeal">0</dd>
+                <dt>Cheese Sandwich</dt>
+                <dd id="cheesesandwich">0</dd>
+            </dl>
+
+            <div class="grid-container">
+                <dl class="grid-item">
+                    <h3>Crafting</h3>
+                    <dt>Milkbread</dt>
+                    <dd>Requires: 1 Milk, 1 Bread <button onclick="craft('milkbread')">Craft</button></dd>
+                    <dt>Milk Sandwich</dt>
+                    <dd>Requires: 2 Milk-Bread <button onclick="craft('milksandwich')">Craft</button></dd>
+                    <dt>Milk Meal</dt>
+                    <dd>Requires: 1 Milk Sandwich, 1 Milk, 1 Plate <button onclick="craft('milkmeal')">Craft</button></dd>
+                    <dt>Cheese Sandwich</dt>
+                    <dd>Requires: 1 Cheese, 2 Bread <button onclick="craft('cheesesandwich')">Craft</button></dd>
+                </dl>
+                <dl class="grid-item">
+                    <h3>Smelting/Aging</h3>
+                    <dt>Cheese</dt>
+                    <dd>Requires: 1 Milk <button onclick="craft('cheese')">Age</button></dd>
+                </dl>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
