@@ -1,5 +1,8 @@
 {
-  "release":"v0.3.0",
-  "snapshot":"v0.3.1s",
-  "message":"Splashtext will be improved in v0.3.1!"
+	"release":"v0.3.0",
+	"snapshot":"",
+	"message":[
+		"Splashtext will be improved in v0.3.1!",
+		"Try it to fix this!"
+	]
 }
