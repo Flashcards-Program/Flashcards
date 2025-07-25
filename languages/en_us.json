@@ -1,0 +1,60 @@
+{
+	"language_name": "English (United States)",
+
+	"update_available": "Update available:",
+	"start_game": "Start game",
+	"settings": "Settings",
+	"quit": "Quit Program",
+
+	"infinite": "Infinite mode",
+	"auto_update": "Update automatically",
+	"advanced_setup": "Advanced setup",
+	"music_settings": "Music settings",
+	"dev_login": "Developer login",
+	"theme": "Theme:",
+	"dark": "Dark",
+	"light": "Light",
+	"language": "Language:",
+	"download_version": "Download older version",
+	"back": "Back",
+
+	"select_version": "Select Version",
+	"available_versions": "Available Versions:",
+	"download": "Download",
+
+	"dev_mode_login": "Developer mode login",
+	"login_success": "Login successful!",
+	"login_success.desc": "Access granted",
+	"login_fail": "Login failed.",
+	"login_fail.desc": "Access denied.\nRetry?",
+	"check": "Check",
+	"cancel": "Cancel",
+
+	"music_select_dialogue": "Select Music File",
+	"music_select_dialogue.files": "Audio Files",
+	"volume": "Volume:",
+	"title_music": "Title screen music:",
+	"none": "None",
+	"reset_file": "Turn off",
+	"cards_music": "Cards screen music:",
+	"select_file": "Select file",
+
+	"setup": "Setup",
+	"grade": "Select grade:",
+	"educational-level": "Select educational level:",
+	"subject": "Select subject:",
+	"chapter": "Select chapter",
+	"paragraph": "Selecteer paragraph",
+	"continue": "Continue",
+
+	"flashcards": "Flashcards",
+	"flip": "Flip",
+	"both_ways": "Both ways",
+	"correct": "Correct",
+	"incorrect": "Incorrect",
+	"exit": "Exit",
+
+	"finish": "Round Complete!",
+	"score": "Score:",
+	"retry": "Retry"
+}

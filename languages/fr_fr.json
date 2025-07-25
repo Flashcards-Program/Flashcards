@@ -1,0 +1,61 @@
+{
+	"language_name": "Français (France)",
+
+	"update_available": "Mise à jour disponible :",
+	"start_game": "Démarrer le jeu",
+	"settings": "Paramètres",
+	"quit": "Quitter le programme",
+
+	"infinite": "Mode infini",
+	"auto_update":"Mise à jour automatique",
+	"advanced_setup":"Configuration avancée",
+	"music_settings": "Paramètres de la musique",
+	"dev_login": "Connexion développeur",
+	"theme": "Thème :",
+	"language": "Langue :",
+	"dark": "Sombre",
+	"light": "Clair",
+	"download_version": "Télécharger une autre version",
+	"back": "Retour",
+
+	"select_version": "Sélectionner une version",
+	"available_versions": "Versions disponibles :",
+	"download": "Télécharger",
+
+	"dev_mode_login": "Connexion au mode développeur",
+	"login_success": "Connexion réussie !",
+	"login_success.desc": "Accès autorisé",
+	"login_fail": "Échec de la connexion.",
+	"login_fail.desc": "Accès refusé.\nRéessayer ?",
+	"check": "Vérifier",
+	"cancel": "Annuler",
+
+	"music_select_dialogue": "Sélectionner un fichier musical",
+	"music_select_dialogue.files": "Fichiers audio",
+	"play_music": "Jouer la musique",
+	"volume": "Volume :",
+	"title_music": "Musique de l'écran titre :",
+	"none": "Aucun",
+	"reset_file": "Éteindre",
+	"cards_music": "Musique de l'écran cartes :",
+	"select_file": "Sélectionner un fichier",
+
+	"setup": "Configuration",
+	"grade": "Sélectionner la classe :",
+	"educational-level": "Sélectionner le niveau scolaire :",
+	"subject": "Sélectionner la matière :",
+	"chapter": "Sélectionner le chapitre",
+	"paragraph": "Sélectionner le paragraphe",
+	"continue": "Continuer",
+
+	"flashcards": "Flashcards",
+	"flip": "Retourner",
+	"both_ways": "Dans les deux sens",
+	"correct": "Correct",
+	"incorrect": "Incorrect",
+	"exit": "Quitter",
+
+	"finish": "Manche terminée !",
+	"score": "Score :",
+	"retry": "Réessayer"
+}

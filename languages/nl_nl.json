@@ -1,0 +1,61 @@
+{
+	"language_name": "Nederlands (Nederland)",
+
+	"update_available": "Update beschikbaar",
+	"start_game": "Start spel",
+	"settings": "Instellingen",
+	"quit": "Programma afsluiten",
+
+	"infinite": "Oneindig modus",
+	"auto_update": "Automatisch bijwerken",
+	"advanced_setup": "Geavanceerde Configuratie",
+	"music_settings": "Muziekinstellingen",
+	"dev_login": "Developer login",
+	"theme": "Thema:",
+	"dark": "Donker",
+	"light": "Licht",
+	"language": "Taal:",
+	"download_version": "Download oudere versie",
+	"back": "Terug",
+
+	"select_version": "Selecteer versie",
+	"available_versions": "Beschikbare versies:",
+	"download": "Download",
+
+	"dev_mode_login": "Developer modus login",
+	"login_success": "Inloggen gelukt!",
+	"login_success.desc": "Toegang verleend.",
+	"login_fail": "Inloggen mislukt.",
+	"login_fail.desc": "Toegang geweigerd.\nOpniew proberen?",
+	"check": "Controleer",
+	"cancel": "Annuleer",
+
+	"music_select_dialogue": "Selecteer Muziekbestand",
+	"music_select_dialogue.files": "Audiobestanden",
+	"play_music": "Speel muziek af",
+	"volume": "Volume:",
+	"title_music": "Titelschermmuziek",
+	"none": "Geen",
+	"reset_file": "Zet uit",
+	"cards_music": "Spelmuziek",
+	"select_file": "Selecteer bestand",
+
+	"setup": "Configuratie",
+	"grade": "Selecteer schooljaar",
+	"educational-level": "Selecteer onderwijsniveau",
+	"subject": "Selecteer schoolvak",
+	"chapter": "Selecteer hoofdstuk",
+	"paragraph": "Selecteer paragraaf",
+	"continue": "Verder",
+
+	"flashcards": "Flashcards",
+	"flip": "Flashcards",
+	"both_ways": "Beide richtingen",
+	"correct": "Juist",
+	"incorrect": "Onjuist",
+	"exit": "Afsluiten",
+
+	"finish": "Ronde compleet!",
+	"score": "Score:",
+	"retry": "Opniew proberen"
+}

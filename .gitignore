@@ -1,0 +1,15 @@
+# Ignore everything at the root
+*
+
+# But do not ignore these items:
+!flashcards.py
+!.gitignore
+
+# Allow Git to enter the languages folder:
+!languages/
+languages/*
+
+# But only include specific files inside:
+!languages/en_us.json
+!languages/fr_fr.json
+!languages/nl_nl.json

@@ -1,6 +1,7 @@
 # Copyright © Raoul van Zomeren. All rights reserved.
 
 # ------ Imports ------
+from httpx import HTTPError
 import requests, random, json, sys, platform, configparser, os, logging, threading, typing, pygame
 import tkinter as tk
 from pygame import mixer
@@ -17,8 +18,8 @@ WIDTH, HEIGHT = 800, 600
 # Github
 GITHUB_API:str = "https://api.github.com"
 OWNER:str = "Doglover1219"
-REPO:str = "Flashcards-release"
-VERSIONS_JSON_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards-release/refs/heads/main/versions.json"
+REPO:str = "Flashcards-Vakken"
+VERSIONS_JSON_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards-Vakken/refs/heads/main/versions.json"
 
 # --- Variables ---
 # versioning
@@ -61,16 +62,22 @@ def load_ini_file() -> str|None:
 GITHUB_TOKEN:str|None = load_ini_file()
 
 def fetch_versions_json() -> dict:
-    """Load versions.json (publicly hosted, but private–repo headers applied)."""
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    resp = requests.get(VERSIONS_JSON_URL, headers=headers)
-    resp.raise_for_status()
-    return resp.json()
+	"""Load versions.json (publicly hosted, but private–repo headers applied)."""
+	headers:dict[str, str] = {"Authorization": f"token {GITHUB_TOKEN}"}
+	resp:requests.Response = requests.get(VERSIONS_JSON_URL, headers=headers)
+	try:
+		resp.raise_for_status()
+	except HTTPError as e:
+		logging.fatal(f"A fatal error occurred:\n  {e}")
+		messagebox.showerror("Fatal", f"A fatal error occurred:\n{e}")
+		sys.exit()
+
+	return resp.json()
 
 def get_latest_version() -> str:
-    """Return the latest release version from versions.json."""
-    data = fetch_versions_json()
-    return data.get("program", "")
+	"""Return the latest release version from versions.json."""
+	data = fetch_versions_json()
+	return data.get("program", "")
 
 
 def check_update_available() -> tuple[bool|None,str|None]:
@@ -105,8 +112,8 @@ def get_splashtext():
 		logging.error(f"Error: Received status code {response.status_code} from server")
 		return ["ERROR: No Splashtext could be retrieved."]
 
-def setdefault_advanced(dictt: dict|list, key, default_value):
-	def _merge(current, default):
+def setdefault_advanced(collection: dict|list, key, default_value):
+	def _merge(current, default) -> dict|list:
 		# If both are dicts, recurse
 		if isinstance(default, dict):
 			if not isinstance(current, dict):
@@ -124,12 +131,12 @@ def setdefault_advanced(dictt: dict|list, key, default_value):
 			# Primitive or mismatched type: replace if type doesn't match
 			return current if isinstance(current, type(default)) else default
 
-	if key not in dictt:
-		dictt[key] = default_value
+	if key not in collection:
+		collection[key] = default_value
 	else:
-		dictt[key] = _merge(dictt[key], default_value)
+		collection[key] = _merge(collection[key], default_value)
 
-	return dictt[key]
+	return collection[key]
 
 def serialize_settings(data:dict|list|tk.Variable) -> dict|list:
 	if isinstance(data, tk.Variable):
@@ -443,29 +450,29 @@ class Menu:
 		"""Fetch the entire Vakken folder structure from GitHub into a nested dict."""
 		logging.info("[fetch_structure()] running...")
 
-		API_BASE = f"https://api.github.com/repos/Doglover1219/Flashcards-release/contents/Vakken"
-		headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+		API_BASE:str = f"https://api.github.com/repos/Doglover1219/Flashcards-Vakken/contents/Vakken"
+		headers:dict[str, str] = {"Authorization": f"token {GITHUB_TOKEN}"}
 
-		def get_contents(path=""):
-			url = f"{API_BASE}/{path}" if path else API_BASE
-			r = requests.get(url, headers=headers)
+		def get_contents(path:str="") -> list:
+			url:str = f"{API_BASE}/{path}" if path else API_BASE
+			r:requests.Response = requests.get(url, headers=headers)
 			return r.json() if r.status_code == 200 else []
 
 		# Load raw structure
-		self.structure = {}
+		self.structure:dict = {}
 		for jaar in get_contents():
 			if jaar["type"] == "dir" and jaar["name"].startswith("Jaar"):
-				jn = jaar["name"]
+				jn:str = jaar["name"]
 				self.structure[jn] = {}
 				for lvl in get_contents(jn):
 					if lvl["type"] == "dir":
-						ln = lvl["name"]
+						ln:str = lvl["name"]
 						self.structure[jn][ln] = {}
 						for js in get_contents(f"{jn}/{ln}"):
 							if js["type"] == "file" and js["name"].endswith(".json"):
 								try:
-									contents = requests.get(js["download_url"]).json()
-									vak_name = js["name"][:-5]  # removes ".json"
+									contents:dict[str,dict[str,dict[str,str]]] = requests.get(js["download_url"]).json()
+									vak_name:str = js["name"][:-5]  # removes ".json"
 									self.structure[jn][ln][vak_name] = contents
 								except (json.JSONDecodeError, requests.RequestException) as e:
 									logging.debug(f"[fetch_structure()] Skipping invalid JSON file '{js['name']}':\n  {e}")
@@ -479,18 +486,17 @@ class Menu:
 				for vak, chapters in vakken.items():
 					for chapter, paras in chapters.items():
 						# Keep only those paragraph entries whose value is a dict containing "_meta" as a dict
-						filtered = {
+						filtered:dict[str,str] = {
 							p: data
 							for p, data in paras.items()
-							if isinstance(data.get("_meta", None), dict)
-						}
+							if isinstance(data.get("_meta", None), dict)}
 						self.structure[jaar][niveau][vak][chapter] = filtered
 
 		logging.info("[fetch_structure()] done!")
 
 	def normalize_structure_keys(self) -> None:
 		"""
-		Recursively replace all backslashes "\\" with "/" in dictionary keys.
+		Recursively replace all escaped backslashes "\\" with "/" in dictionary keys.
 		Works for nested dictionaries only.
 		"""
 		logging.info("[normalize_keys_slash()] running...")
@@ -505,7 +511,10 @@ class Menu:
 		logging.info("[normalize_keys_slash()] done!")
 
 	def setup_music(self) -> None:
-		"""Initialize the music mixer and load music settings."""
+		# tbh I probably need to look into this function and all music related stuff,
+		# but I can't be bothered to do so unless I really have to... (which is when somebody makes an issue about this...)
+		"""Initializes Pygame's mixer, and loads silence, then sets the volume and plays.
+		"""		
 		logging.info("[setup_music()] running...")
 
 		mixer.init()
@@ -516,20 +525,20 @@ class Menu:
 
 		logging.info("[setup_music()] done!")
 
-	def switch_music(self, type_: str, force: bool = False) -> None:
+	def switch_music(self, type_:str) -> None:
+		# tbh I probably need to look into this function and all music related stuff,
+		# but I can't be bothered to do so unless I really have to... (which is when somebody makes an issue about this...)
 		"""
 		Switch to a specific music track ("title" or "cards").
 		Falls back to silence.mp3 if file is missing or playback fails.
 		"""
-		if self.current_music == type_ and not force:
+		if self.current_music == type_:
 			return
+		
+		mixer.music.stop()
 
-		if not self.settings_var["music"]["play_music"].get() and not force:
-			mixer.music.stop()
-			return
-
-		music_path = self.settings_var["music"].get(type_, tk.StringVar(root, "silence.mp3")).get()
-		full_path = resource_path(music_path)
+		music_path:str = self.settings_var["music"].get(type_, tk.StringVar(root, "silence.mp3")).get()
+		full_path:str = resource_path(music_path)
 
 		try:
 			mixer.music.load(full_path)
@@ -538,7 +547,7 @@ class Menu:
 			logging.info(f"[switch_music()] Now playing '{music_path}'")
 		except (FileNotFoundError, pygame.error) as e:
 			logging.warning(f"[switch_music()] Failed to load '{music_path}': {e}")
-			fallback = resource_path("silence.mp3")
+			fallback:str = resource_path("silence.mp3")
 			try:
 				mixer.music.load(fallback)
 				mixer.music.set_volume(self.settings_var["music"]["volume"].get() / 100)
