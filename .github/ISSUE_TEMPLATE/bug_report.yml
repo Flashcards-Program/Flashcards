@@ -1,0 +1,33 @@
+name: Bug Report
+description: Report a bug you came across
+title: "[Bug]: "
+labels: [bug]
+assignees: "Doglover1219"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+  - type: input
+    id: title
+    attributes:
+      label: Short Title
+      description: A short title for the bug
+      placeholder: e.g. "Music switch fails"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What’s the problem?
+      description: Tell us what the bug is
+      placeholder: e.g. "This feature isn't working"
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ### Log File
+        **Drag & drop your `latest.log` here.**  
+        (Or click the “Attach files” button below to select it.)
