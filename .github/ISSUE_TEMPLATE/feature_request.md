@@ -1,0 +1,36 @@
+name: Feature Request
+about: Suggest a new idea or improvement
+title: "[Feature]: "
+labels: [enhancement, suggestion]
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      ## Feature Request
+
+- type: input
+  id: title
+  attributes:
+    label: Short Title
+    description: A short title for the feature
+    placeholder: e.g. "Add dark mode"
+  validations:
+    required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What’s the idea?
+      description: Tell us what the suggestion is
+      placeholder: e.g. "It would be great if..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Why would it help?
+      description: Explain why this would improve the program
+    validations:
+      required: true
