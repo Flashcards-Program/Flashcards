@@ -8,7 +8,6 @@ body:
   attributes:
     value: |
       ## Feature Request
-
 - type: input
   id: title
   attributes:
@@ -17,15 +16,14 @@ body:
     placeholder: e.g. "Add dark mode"
   validations:
     required: true
-
-  - type: textarea
-    id: description
-    attributes:
-      label: What’s the idea?
-      description: Tell us what the suggestion is
-      placeholder: e.g. "It would be great if..."
-    validations:
-      required: true
+- type: textarea
+  id: description
+  attributes:
+    label: What’s the idea?
+    description: Tell us what the suggestion is
+    placeholder: e.g. "It would be great if..."
+  validations:
+    required: true
 
   - type: textarea
     id: benefits
