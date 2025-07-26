@@ -1344,7 +1344,7 @@ if __name__ == "__main__":
 		root.protocol("WM_DELETE_WINDOW", program.on_closing)
 		tk.mainloop()
 	else:
-		logging.error("MacOS detected, aborting...")
+		logging.error("Unsupported OS detected...")
 		root.withdraw()
-		messagebox.showerror("MacOS not supported", f"Flashcards© v{version} does not support MacOS.\nIf you don't agree with this then I honestly couldn't care less.")
+		messagebox.showerror("MacOS not supported", f"Flashcards© v{version} does not support MacOS.\nIf you want to make it work, download the nonexistant MacOS version instead.")
 		sys.exit()
