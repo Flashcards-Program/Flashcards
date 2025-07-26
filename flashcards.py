@@ -18,14 +18,16 @@ WIDTH, HEIGHT = 800, 600
 # Github
 GITHUB_API:str = "https://api.github.com"
 OWNER:str = "Doglover1219"
-REPO:str = "Flashcards-Vakken"
+REPO:str = "Flashcards"
 VERSIONS_JSON_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards-Vakken/refs/heads/main/versions.json"
+VAKKEN_DIRECTORY_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards/refs/heads/main/Vakken"
 
 # --- Variables ---
-# versioning
-version, version_name = f"1.0.0", "The Launching Update"
+# Versioning
+version:str = "1.0.0"
+version_name:str = "The Launching Update"
 
-# initialization
+# Tkinter initialization
 root = tk.Tk()
 root.title(f"Flashcards© v{version}{f"-p{PLAYTEST}" if PLAYTEST else ""}: {version_name}")
 root.minsize(WIDTH, HEIGHT)
@@ -185,11 +187,11 @@ class Menu:
 
 	def finish_init(self) -> None:
 		# --- Get Latest Update and Generate Splashtext ---
-		self.update_available = check_update_available()
+		self.update_available:tuple[bool|None,str|None] = check_update_available()
 		self.splashtext_array = get_splashtext()
 
 		# --- Setup Settings ---
-		self.settings_var = self.settings_exists()
+		self.settings_var:dict = self.settings_exists()
 
 		# --- Set settings defaults ---
 		# - booleans -
@@ -239,26 +241,38 @@ class Menu:
 		self.change(self.main)
 
 	def rebuild_theme_map(self) -> None:
-		self.theme_map = {
+		logging.info("[rebuild_theme_map] running...")
+		self.theme_map: dict[str, str] = {
 			"light": self.tr("light"),
 			"dark": self.tr("dark")
 		}
-		self.inverse_theme_map = {v: k for k, v in self.theme_map.items()}
+		self.inverse_theme_map:dict[str, str] = {v: k for k, v in self.theme_map.items()}
+		logging.info("[rebuild_theme_map] done!")
 
 	def download_version(self, target_version: str) -> None:
 		"""
 		Authenticated download via GitHub Releases API.
 		"""
-		tag = "Playtest" if PLAYTEST else target_version
-		filename = f"flashcards.{target_version}.exe"
-		api_headers = {
+		logging.info("[download_version] running...")
+
+		if target_version[-2] == "p":   # e.g., v1.0.0-p1
+			tag:str = target_version[0:-4]
+		elif target_version[-3] == "p": # e.g., v1.0.0-p12
+			tag:str = target_version[0:-5]
+		else:                           # e.g., v1.0.0
+			tag:str = target_version[0:-2]
+		# tag = v{X}.{Y}
+		logging.debug(f"[download_version] tag set to: {tag}")
+
+		filename:str = f"flashcards.{target_version}.exe"
+		api_headers:dict[str, str] = {
 			"Authorization": f"token {GITHUB_TOKEN}",
 			"Accept": "application/vnd.github.v3+json"
 		}
 
 		# 1) Fetch release by tag
-		rel_url = f"{GITHUB_API}/repos/{OWNER}/{REPO}/releases/tags/{tag}"
-		resp = requests.get(rel_url, headers=api_headers)
+		rel_url:str = f"{GITHUB_API}/repos/{OWNER}/{REPO}/releases/tags/{tag}"
+		resp:requests.Response = requests.get(rel_url, headers=api_headers)
 		if resp.status_code == 404:
 			messagebox.showerror("Error", f"No release found for tag '{tag}'.")
 			logging.error(f"No release for tag '{tag}' → 404")
@@ -267,28 +281,20 @@ class Menu:
 		release = resp.json()
 
 		# 2) Find the asset whose name matches
-		asset = next(
-			(a for a in release["assets"] if a["name"] == filename),
-			None
-		)
+		asset = next((a for a in release["assets"] if a["name"] == filename), None)
 		if not asset:
-			messagebox.showerror(
-				"Error",
-				f"Release '{tag}' has no asset named:\n{filename}"
-			)
+			messagebox.showerror("Error",
+				f"Release '{tag}' has no asset named:\n{filename}")
 			logging.error(f"Asset '{filename}' missing in release '{tag}'")
 			return
 
 		# 3) Download the asset via its API endpoint
-		download_url = (
-			f"{GITHUB_API}/repos/{OWNER}/{REPO}"
-			f"/releases/assets/{asset['id']}"
-		)
-		dl_headers = {
+		download_url:str = f"{GITHUB_API}/repos/{OWNER}/{REPO}/releases/assets/{asset['id']}"
+		dl_headers:dict[str, str] = {
 			"Authorization": f"token {GITHUB_TOKEN}",
-			"Accept": "application/octet-stream"
-		}
-		r2 = requests.get(download_url, headers=dl_headers, stream=True)
+			"Accept": "application/octet-stream"}
+		r2:requests.Response = requests.get(download_url, headers=dl_headers, stream=True)
+
 		try:
 			r2.raise_for_status()
 		except requests.RequestException as e:
@@ -297,33 +303,31 @@ class Menu:
 			return
 
 		# 4) Write to disk and notify
-		local_path = os.path.join(os.getcwd(), filename)
+		local_path:str = os.path.join(os.getcwd(), filename)
 		with open(local_path, "wb") as f:
 			for chunk in r2.iter_content(8192):
 				if chunk:
 					f.write(chunk)
 
-		messagebox.showinfo(
-			"Update Complete",
-			f"Version {target_version} downloaded as:\n{local_path}\n"
-			"Please restart the program."
-		)
-		logging.info(f"Downloaded version {target_version} to {local_path}")
+		messagebox.showinfo("Update Complete",
+					  f"Version {target_version} downloaded as:\n{local_path}\nPlease restart the program.")
+		logging.info(f"[download_version] Downloaded version {target_version} to {local_path}")
+		logging.info(f"[download_version] done!")
 		sys.exit()
 
 	def load_languages(self) -> None:
 		logging.info("[load_languages()] running...")
 
-		self.language_data = {}
-		self.code_to_display = {}
-		self.display_to_code = {}
-		self.available_languages = []
+		self.language_data:dict[str,dict[str,str]] = {}
+		self.code_to_display:dict[str,str] = {}
+		self.display_to_code:dict[str,str] = {}
+		self.available_languages:list[str] = []
 
-		lang_dir = resource_path("languages")
+		lang_dir:str = resource_path("languages")
 		if os.path.isdir(lang_dir):
 			for file in os.listdir(lang_dir):
 				if file.endswith(".json"):
-					lang_code = file[:-5]
+					lang_code:str = file[:-5]
 					with open(os.path.join(lang_dir, file), encoding="utf-8") as f:
 						lang_data = json.load(f)
 						display_name = lang_data.get("language_name", lang_code)
@@ -399,7 +403,7 @@ class Menu:
 
 		try:
 			with open("settings.json", "r") as f:
-				contents = f.read().strip()
+				contents:str = f.read().strip()
 				settings = json.loads(contents) if contents else {}
 		except FileNotFoundError as error:
 			logging.warning("[settings_exists()] file settings.json not found.")
@@ -411,11 +415,11 @@ class Menu:
 			else:
 				sys.exit()
 
-		settings = self.convert_settings(settings)
+		settings:dict = self.convert_settings(settings) # type: ignore
 
 		logging.info("[settings_exists()] done!")
 
-		return settings  # type: ignore
+		return settings
 
 	def convert_settings(self, settings:dict|list) -> dict|list:
 		logging.info("[convert_settings()] running...")
@@ -432,7 +436,7 @@ class Menu:
 					settings[key] = tk.StringVar(root, value)
 		elif isinstance(settings, list):
 			for i in range(len(settings)):
-				value = settings[i]
+				value:dict|list|bool|int|str = settings[i]
 				if isinstance(value, dict) or isinstance(value, list):
 					settings[i] = self.convert_settings(value)
 				elif isinstance(value, bool):
@@ -532,6 +536,7 @@ class Menu:
 		Switch to a specific music track ("title" or "cards").
 		Falls back to silence.mp3 if file is missing or playback fails.
 		"""
+		logging.info("[switch_music] running...")
 		if self.current_music == type_:
 			return
 		
@@ -557,8 +562,10 @@ class Menu:
 				logging.error(f"[switch_music()] Even fallback failed: {fallback_error}")
 		
 		self.current_music = type_
+		logging.info("[switch_music] done!")
 
 	def load_custom_music(self, type_:typing.Literal["title","cards"]) -> None:
+		logging.info("[load_custom_music] running...")
 		file = filedialog.askopenfile("r", filetypes=[("MP3 files", "*.mp3"), ("WAV files", "*.wav"), ("OGG files", "*.ogg")])
 		if file is not None:
 			self.settings_var[type_].set(file)
@@ -566,6 +573,8 @@ class Menu:
 				mixer.music.load(file)
 				mixer.music.play()
 			self.change(self.music_config)
+			
+		logging.info("[load_custom_music] done!")
 
 	def tr(self, key:str) -> str:
 		"""Translate a UI key into the current language."""
@@ -590,7 +599,7 @@ class Menu:
 				logging.debug("[change()] Switching to cards music")
 				self.switch_music("cards")
 
-		logging.info(f"[change()] switching to {menu.__name__}!")
+		logging.info(f"[change()] done! (switch to: {menu.__name__})")
 		menu()
 
 	def loading(self) -> None:
@@ -710,14 +719,14 @@ class Menu:
 
 		tk.Label(popup, text=self.tr("available_versions"), font=("Helvetica", 12, "bold")).pack(pady=(10, 5))
 
-		versions_list = self.get_available_versions()
+		versions_list:list[str] = self.get_available_versions()
 		logging.info(f"[select_version()] {versions_list}")
 		listbox = tk.Listbox(popup, height=15)
 		for v in versions_list:
 			listbox.insert(tk.END, v)
 		listbox.pack(pady=(0, 10))
 
-		def confirm():
+		def confirm() -> None:
 			selection = listbox.get(listbox.curselection())
 			popup.destroy()
 			self.download_version(selection)
@@ -730,23 +739,26 @@ class Menu:
 		Returns either the 'releases' or 'playtest' list,
 		depending on the PLAYTEST flag.
 		"""
+		logging.info("[get_available_versions] running...")
 		try:
 			data = fetch_versions_json()
 			key = "playtest" if PLAYTEST else "releases"
+			logging.info("[get_available_versions] done!")
 			return data.get("versions", {}).get(key, [])
 		except Exception as e:
 			logging.error(f"[get_available_versions] {e}")
+			logging.info("[get_available_versions] done!")
 			return []
 
 	def on_language(self, event) -> None:
 		logging.info("[on_language()] running...")
 
-		selected_display = self.language_setting.get()
-		selected_code = self.display_to_code.get(selected_display, selected_display)
+		selected_display:str = self.language_setting.get()
+		selected_code:str = self.display_to_code.get(selected_display, selected_display)
 
 		self.settings_var["language"].set(selected_code)
-		self.current_language = selected_code
-		self.translations = self.language_data.get(self.current_language, {})
+		self.current_language:str = selected_code
+		self.translations:dict[str, str] = self.language_data.get(self.current_language, {})
 
 		self.rebuild_theme_map()
 
@@ -756,8 +768,8 @@ class Menu:
 	def on_theme(self, event) -> None:
 		logging.info("[on_theme()] running...")
 
-		selected_display = self.theme_setting.get()
-		selected_internal = self.inverse_theme_map.get(selected_display, "light")
+		selected_display:str = self.theme_setting.get()
+		selected_internal:str = self.inverse_theme_map.get(selected_display, "light")
 
 		self.settings_var["theme"].set(selected_internal)
 
@@ -768,21 +780,21 @@ class Menu:
 	def music_config(self) -> None:
 		logging.info("[music_config()] running...")
 
-		def on_volume(e=None):
-			vol = int(self.volume_scale.get()) / 100
+		def on_volume(e=None) -> None:
+			vol:float = int(self.volume_scale.get()) / 100
 			self.settings_var["music"]["volume"].set(vol * 100)
 			self.volume_label.config(text=f"{int(vol*100)}/100")
 			mixer.music.set_volume(vol)
 
 		def on_music_select(music_type:typing.Literal["title", "cards"]):
-			filetypes = [(self.tr("music_select_dialogue.files"), "*.mp3 *.wav *.ogg")]
-			path = filedialog.askopenfilename(title=self.tr("music_select_dialogue"), filetypes=filetypes)
+			filetypes:list[tuple[str, str]] = [(self.tr("music_select_dialogue.files"), "*.mp3 *.wav *.ogg")]
+			path:str = filedialog.askopenfilename(title=self.tr("music_select_dialogue"), filetypes=filetypes)
 			if not path:
 				return
 			# store path
 			self.settings_var["music"][music_type].set(path)
 			# update the corresponding label
-			short = os.path.basename(path)
+			short:str = os.path.basename(path)
 			if music_type == "title":
 				self.title_music_label.config(text=f"{self.tr('title_music')} ({short})")
 				# preview-play title music
@@ -927,7 +939,9 @@ class Menu:
 	def resync_setup_values(self, initial:bool=False) -> None:
 		logging.info("[resync_setup_values()] running...")
 		if initial:
-			self.last_jaar, self.last_niveau, self.last_vak = self.settings_var["last_session"]["jaar"].get(), self.settings_var["last_session"]["niveau"].get(), self.settings_var["last_session"]["vak"].get()
+			self.last_jaar:str = self.settings_var["last_session"]["jaar"].get()
+			self.last_niveau:str = self.settings_var["last_session"]["niveau"].get()
+			self.last_vak:str = self.settings_var["last_session"]["vak"].get()
 
 		self.jaar_values = list(self.structure.keys())
 		self.niveau_values = []

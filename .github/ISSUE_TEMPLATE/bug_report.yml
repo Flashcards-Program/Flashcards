@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## Feature Request
+        ## Bug Report
   - type: input
     id: title
     attributes:
