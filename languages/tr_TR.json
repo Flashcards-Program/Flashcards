@@ -1,0 +1,60 @@
+{
+	"language_name": "Türkçe (Türkiye)",
+
+	"update_available": "Güncelleme Mevcut:",
+	"start_game": "Oyunu Başlat",
+	"settings": "Ayarlar",
+	"quit": "Programdan Çık",
+
+	"infinite": "Sonsuz Mod",
+	"auto_update": "Otomatik Güncelleme",
+	"advanced_setup": "Gelişmiş Kurulum",
+	"music_settings": "Müzik Ayarları",
+	"dev_login": "Geliştirici Girişi",
+	"theme": "Tema:",
+	"language": "Dil:",
+	"dark": "Karanlık",
+	"light": "Aydınlık",
+	"download_version": "Başka Bir Sürüm İndir",
+	"back": "Geri",
+
+	"select_version": "Sürüm Seç",
+	"available_versions": "Mevcut Sürümler:",
+	"download": "İndir",
+
+	"login_success": "Giriş Başarılı!",
+	"login_success.desc": "Erişim Verildi",
+	"login_fail": "Giriş Başarısız.",
+	"login_fail.desc": "Erişim Reddedildi.\nTekrar denensin mi?",
+	"check": "Kontrol Et",
+	"cancel": "İptal",
+
+	"music_select_dialogue": "Müzik Dosyası Seç",
+	"music_select_dialogue.files": "Ses Dosyaları",
+	"play_music": "Müziği Oynat",
+	"volume": "Ses Seviyesi:",
+	"title_music": "Başlık Ekranı Müziği:",
+	"none": "Yok",
+	"reset_file": "Kapat",
+	"cards_music": "Kartlar Ekranı Müziği:",
+	"select_file": "Dosya Seç",
+
+	"setup": "Kurulum",
+	"grade": "Sınıf Seç:",
+	"educational-level": "Eğitim Seviyesi Seç:",
+	"subject": "Konu Seç:",
+	"chapter": "Bölüm Seç",
+	"paragraph": "Paragraf Seç",
+	"continue": "Devam Et",
+
+	"flashcards": "Flash Kartlar",
+	"flip": "Çevir",
+	"both_ways": "İki Yönlü",
+	"correct": "Doğru",
+	"incorrect": "Yanlış",
+	"exit": "Çık",
+
+	"finish": "Tur Bitti!",
+	"score": "Puan:",
+	"retry": "Tekrar Dene"
+}

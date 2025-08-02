@@ -10,24 +10,22 @@ from tkinter import ttk, messagebox, filedialog
 # ------ Info & Initialization ------
 
 # --- Constants ---
-# Basic Info
-DEV_MODE:bool = False
-PLAYTEST:int = 1
+# - Basic Info -
+DEV_MODE:bool = True
+PLAYTEST:int = 1 # Playtest number, 0 for release, 1 for first playtest, etc.
 WIDTH, HEIGHT = 800, 600
 
-# Github
+# - Github Info -
 GITHUB_API:str = "https://api.github.com"
-OWNER:str = "Doglover1219"
-REPO:str = "Flashcards"
+OWNER, REPO = "Doglover1219", "Flashcards"
 VERSIONS_JSON_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards-Vakken/refs/heads/main/versions.json"
 VAKKEN_DIRECTORY_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards/refs/heads/main/Vakken"
 
 # --- Variables ---
-# Versioning
-version:str = "1.0.0"
-version_name:str = "The Launching Update"
+# - Versioning -
+version, version_name = "1.0.0", "The Launching Update"
 
-# Tkinter initialization
+# --- Tkinter Initialization ---
 root = tk.Tk()
 root.title(f"Flashcards© v{version}{f"-p{PLAYTEST}" if PLAYTEST else ""}: {version_name}")
 root.minsize(WIDTH, HEIGHT)
@@ -38,7 +36,7 @@ style = ttk.Style()
 # ------ Logging Setup ------
 logging.basicConfig(
 	level=logging.INFO if not DEV_MODE else logging.DEBUG,
-	format="[{asctime}][{levelname}] {message}",
+	format="[{levelname:<8}][{filename:<17}:{lineno:<4d} - {funcName:>20}()] {message}",
 	style="{",
 	handlers=[
 		logging.FileHandler("latest.log", mode="w", encoding="utf-8"),
@@ -102,7 +100,7 @@ def check_update_available() -> tuple[bool|None,str|None]:
 		return None, None
 
 def get_splashtext():
-	url = "https://raw.githubusercontent.com/Doglover1219/Flashcards-release/refs/heads/main/splash.json?token=GHSAT0AAAAAADD52YUBRDAFAW4QAQJZQXQQ2BF3DPQ"
+	url = "https://raw.githubusercontent.com/Doglover1219/Flashcards-release/refs/heads/main/splash.json"
 	headers:dict[str, str] = {
 		"Authorization": f"token {GITHUB_TOKEN}"
 	}
@@ -169,8 +167,8 @@ class TkinterLogHandler(logging.Handler):
 		self.log_var.set("\n".join(self.logs))
 
 class Menu:
-	def __init__(self) -> None:
-		logging.info("[__init__()] running...")
+	def __init__(self, macos:bool=False) -> None:
+		logging.info("Running...")
 
 		self.log_output_var = tk.StringVar()
 		self.log_handler = TkinterLogHandler(self.log_output_var)
@@ -216,12 +214,12 @@ class Menu:
 		})
 
 		# --- Setup GUI & Music ---
-		self.apply_theme()
-
 		self.load_languages()
 		lang_code = self.settings_var["language"].get()
 		self.current_language = lang_code
 		self.translations = self.language_data.get(lang_code, {})
+
+		self.apply_theme()
 
 		self.rebuild_theme_map()
 
@@ -232,28 +230,28 @@ class Menu:
 
 		# --- Auto-update Functionality ---
 		if self.settings_var["auto_update"].get() and self.update_available[0] and self.update_available[1]:
-			logging.info(f"[__init__()] Auto update: new version available, {self.update_available[1]}.")
+			logging.info(f"Auto update: new version available, {self.update_available[1]}.")
 			self.download_version(self.update_available[1])
 		else:
-			logging.info("[__init__()] Auto update: this is the latest version.")
+			logging.info("Auto update: this is the latest version.")
 
-		logging.info("[__init__()] done!")
+		logging.info("Done!")
 		self.change(self.main)
 
 	def rebuild_theme_map(self) -> None:
-		logging.info("[rebuild_theme_map] running...")
+		logging.info("Running...")
 		self.theme_map: dict[str, str] = {
 			"light": self.tr("light"),
 			"dark": self.tr("dark")
 		}
 		self.inverse_theme_map:dict[str, str] = {v: k for k, v in self.theme_map.items()}
-		logging.info("[rebuild_theme_map] done!")
+		logging.info("Done!")
 
 	def download_version(self, target_version: str) -> None:
 		"""
 		Authenticated download via GitHub Releases API.
 		"""
-		logging.info("[download_version] running...")
+		logging.info("Running...")
 
 		if target_version[-2] == "p":   # e.g., v1.0.0-p1
 			tag:str = target_version[0:-4]
@@ -262,7 +260,7 @@ class Menu:
 		else:                           # e.g., v1.0.0
 			tag:str = target_version[0:-2]
 		# tag = v{X}.{Y}
-		logging.debug(f"[download_version] tag set to: {tag}")
+		logging.debug(f"tag set to: {tag}")
 
 		filename:str = f"flashcards.{target_version}.exe"
 		api_headers:dict[str, str] = {
@@ -311,12 +309,12 @@ class Menu:
 
 		messagebox.showinfo("Update Complete",
 					  f"Version {target_version} downloaded as:\n{local_path}\nPlease restart the program.")
-		logging.info(f"[download_version] Downloaded version {target_version} to {local_path}")
-		logging.info(f"[download_version] done!")
+		logging.info(f"downloaded version {target_version} to {local_path}")
+		logging.info(f"Done!")
 		sys.exit()
 
 	def load_languages(self) -> None:
-		logging.info("[load_languages()] running...")
+		logging.info("Running...")
 
 		self.language_data:dict[str,dict[str,str]] = {}
 		self.code_to_display:dict[str,str] = {}
@@ -347,11 +345,11 @@ class Menu:
 		if lang_code not in self.code_to_display:
 			self.settings_var["language"].set(list(self.code_to_display.keys())[0])
 
-		logging.info("[load_languages()] done!")
+		logging.info("Done!")
 
 	def apply_theme(self) -> None:
 		"""Apply light or dark theme to all Ttk widgets."""
-		logging.info("[apply_theme()] running...")
+		logging.info("Running...")
 
 		style.theme_use("clam")
 
@@ -396,33 +394,33 @@ class Menu:
 		# Progressbar
 		style.configure("Horizontal.TProgressbar", background=self.highlight)
 
-		logging.info("[apply_theme()] done!")
+		logging.info("Done!")
 
 	def settings_exists(self) -> dict:
-		logging.info("[settings_exists()] running...")
+		logging.info("Running...")
 
 		try:
 			with open("settings.json", "r") as f:
 				contents:str = f.read().strip()
 				settings = json.loads(contents) if contents else {}
-		except FileNotFoundError as error:
-			logging.warning("[settings_exists()] file settings.json not found.")
-			if messagebox.askyesno(title=str(error), message="No settings file was found. A new one must be made to continue.\nMake a new file?"):
+		except FileNotFoundError as e:
+			logging.warning("file settings.json not found.")
+			if messagebox.askyesno(title=str(e), message="No settings file was found. A new one must be made to continue.\nMake a new file?"):
 				with open("settings.json", "x") as f:
 					json.dump({}, f, indent=4)
 				with open("settings.json", "r") as f:
 					settings = json.load(f)
 			else:
-				sys.exit()
+				self.on_closing(True)
 
 		settings:dict = self.convert_settings(settings) # type: ignore
 
-		logging.info("[settings_exists()] done!")
+		logging.info("Done!")
 
 		return settings
 
 	def convert_settings(self, settings:dict|list) -> dict|list:
-		logging.info("[convert_settings()] running...")
+		logging.info("Running...")
 
 		if isinstance(settings, dict):
 			for key, value in settings.items():
@@ -446,13 +444,13 @@ class Menu:
 				elif isinstance(value, str):
 					settings[i] = tk.StringVar(root, value)
 
-		logging.info("[convert_settings()] done!")
+		logging.info("Done!")
 
 		return settings
 
 	def fetch_structure(self) -> None:
 		"""Fetch the entire Vakken folder structure from GitHub into a nested dict."""
-		logging.info("[fetch_structure()] running...")
+		logging.info("Running...")
 
 		API_BASE:str = f"https://api.github.com/repos/Doglover1219/Flashcards-Vakken/contents/Vakken"
 		headers:dict[str, str] = {"Authorization": f"token {GITHUB_TOKEN}"}
@@ -461,6 +459,8 @@ class Menu:
 			url:str = f"{API_BASE}/{path}" if path else API_BASE
 			r:requests.Response = requests.get(url, headers=headers)
 			return r.json() if r.status_code == 200 else []
+
+		skip_list:list = []
 
 		# Load raw structure
 		self.structure:dict = {}
@@ -479,10 +479,11 @@ class Menu:
 									vak_name:str = js["name"][:-5]  # removes ".json"
 									self.structure[jn][ln][vak_name] = contents
 								except (json.JSONDecodeError, requests.RequestException) as e:
-									logging.debug(f"[fetch_structure()] Skipping invalid JSON file '{js['name']}':\n  {e}")
+									skip_list.append((jn, ln, js['name'], e))
 
-		# Normalize keys
-		self.normalize_structure_keys()
+		if len(skip_list) > 0:
+			for skip in skip_list:
+				logging.warning(f"Skipped invalid JSON file '{skip[0]}/{skip[1]}/{skip[2]}':\n\t{skip[3]}")
 
 		# ——— Filter out paragraphs lacking a proper _meta dict ———
 		for jaar, jaren in self.structure.items():
@@ -496,30 +497,14 @@ class Menu:
 							if isinstance(data.get("_meta", None), dict)}
 						self.structure[jaar][niveau][vak][chapter] = filtered
 
-		logging.info("[fetch_structure()] done!")
-
-	def normalize_structure_keys(self) -> None:
-		"""
-		Recursively replace all escaped backslashes "\\" with "/" in dictionary keys.
-		Works for nested dictionaries only.
-		"""
-		logging.info("[normalize_keys_slash()] running...")
-
-		for jaar_key in list(self.structure.keys()):
-			new_jaar = {}
-			for niveau_key in list(self.structure[jaar_key].keys()):
-				new_key = niveau_key.replace("\\", "/")
-				new_jaar[new_key] = self.structure[jaar_key][niveau_key]
-			self.structure[jaar_key] = new_jaar
-
-		logging.info("[normalize_keys_slash()] done!")
+		logging.info("Done!")
 
 	def setup_music(self) -> None:
 		# tbh I probably need to look into this function and all music related stuff,
 		# but I can't be bothered to do so unless I really have to... (which is when somebody makes an issue about this...)
 		"""Initializes Pygame's mixer, and loads silence, then sets the volume and plays.
 		"""		
-		logging.info("[setup_music()] running...")
+		logging.info("Running...")
 
 		mixer.init()
 		mixer.music.load(resource_path("silence.mp3"))
@@ -527,7 +512,7 @@ class Menu:
 		mixer.music.set_volume(self.settings_var["music"]["volume"].get() / 100)
 		mixer.music.play(loops=-1)
 
-		logging.info("[setup_music()] done!")
+		logging.info("Done!")
 
 	def switch_music(self, type_:str) -> None:
 		# tbh I probably need to look into this function and all music related stuff,
@@ -536,7 +521,7 @@ class Menu:
 		Switch to a specific music track ("title" or "cards").
 		Falls back to silence.mp3 if file is missing or playback fails.
 		"""
-		logging.info("[switch_music] running...")
+		logging.info("Running...")
 		if self.current_music == type_:
 			return
 		
@@ -549,23 +534,23 @@ class Menu:
 			mixer.music.load(full_path)
 			mixer.music.set_volume(self.settings_var["music"]["volume"].get() / 100)
 			mixer.music.play(loops=-1)
-			logging.info(f"[switch_music()] Now playing '{music_path}'")
+			logging.info(f"Now playing '{music_path}'")
 		except (FileNotFoundError, pygame.error) as e:
-			logging.warning(f"[switch_music()] Failed to load '{music_path}': {e}")
+			logging.warning(f"Failed to load '{music_path}': {e}")
 			fallback:str = resource_path("silence.mp3")
 			try:
 				mixer.music.load(fallback)
 				mixer.music.set_volume(self.settings_var["music"]["volume"].get() / 100)
 				mixer.music.play(loops=-1)
-				logging.info("[switch_music()] Fallback to silence.mp3")
+				logging.info("Fallback to silence.mp3")
 			except Exception as fallback_error:
-				logging.error(f"[switch_music()] Even fallback failed: {fallback_error}")
+				logging.error(f"Even fallback failed: {fallback_error}")
 		
 		self.current_music = type_
-		logging.info("[switch_music] done!")
+		logging.info("Done!")
 
 	def load_custom_music(self, type_:typing.Literal["title","cards"]) -> None:
-		logging.info("[load_custom_music] running...")
+		logging.info("Running...")
 		file = filedialog.askopenfile("r", filetypes=[("MP3 files", "*.mp3"), ("WAV files", "*.wav"), ("OGG files", "*.ogg")])
 		if file is not None:
 			self.settings_var[type_].set(file)
@@ -573,8 +558,8 @@ class Menu:
 				mixer.music.load(file)
 				mixer.music.play()
 			self.change(self.music_config)
-			
-		logging.info("[load_custom_music] done!")
+
+		logging.info("Done!")
 
 	def tr(self, key:str) -> str:
 		"""Translate a UI key into the current language."""
@@ -586,20 +571,20 @@ class Menu:
 		Args:
 			menu (collections.abc.Callable): the menu to call after destroying the current widgets.
 		"""
-		logging.info("[change()] running...")
+		logging.info("Running...")
 
 		for widget in root.winfo_children():
 			widget.destroy()
 		
 		if menu != self.loading:
 			if menu not in [self.cards, self.finish]:
-				logging.debug("[change()] Switching to title music")
+				logging.debug("Switching to title music")
 				self.switch_music("title")
 			else:
-				logging.debug("[change()] Switching to cards music")
+				logging.debug("Switching to cards music")
 				self.switch_music("cards")
 
-		logging.info(f"[change()] done! (switch to: {menu.__name__})")
+		logging.info(f"Done! (switch to: {menu.__name__})")
 		menu()
 
 	def loading(self) -> None:
@@ -700,7 +685,7 @@ class Menu:
 		exit_frame = ttk.Frame(root)
 
 		def back():
-			logging.debug(f"[settings()] Settings:\n{self.settings_var}")
+			logging.debug(f"Settings:\n{self.settings_var}")
 			self.change(self.main)
 
 		self.back_button = ttk.Button(exit_frame, text=self.tr("back"), command=back)
@@ -720,7 +705,7 @@ class Menu:
 		tk.Label(popup, text=self.tr("available_versions"), font=("Helvetica", 12, "bold")).pack(pady=(10, 5))
 
 		versions_list:list[str] = self.get_available_versions()
-		logging.info(f"[select_version()] {versions_list}")
+		logging.info(f"{versions_list}")
 		listbox = tk.Listbox(popup, height=15)
 		for v in versions_list:
 			listbox.insert(tk.END, v)
@@ -739,19 +724,19 @@ class Menu:
 		Returns either the 'releases' or 'playtest' list,
 		depending on the PLAYTEST flag.
 		"""
-		logging.info("[get_available_versions] running...")
+		logging.info("[get_available_versions] Running...")
 		try:
 			data = fetch_versions_json()
 			key = "playtest" if PLAYTEST else "releases"
-			logging.info("[get_available_versions] done!")
+			logging.info("[get_available_versions] Done!")
 			return data.get("versions", {}).get(key, [])
 		except Exception as e:
 			logging.error(f"[get_available_versions] {e}")
-			logging.info("[get_available_versions] done!")
+			logging.info("[get_available_versions] Done!")
 			return []
 
 	def on_language(self, event) -> None:
-		logging.info("[on_language()] running...")
+		logging.info("Running...")
 
 		selected_display:str = self.language_setting.get()
 		selected_code:str = self.display_to_code.get(selected_display, selected_display)
@@ -762,11 +747,11 @@ class Menu:
 
 		self.rebuild_theme_map()
 
-		logging.info("[on_language()] done!")
+		logging.info("Done!")
 		self.change(self.settings)
 
 	def on_theme(self, event) -> None:
-		logging.info("[on_theme()] running...")
+		logging.info("Running...")
 
 		selected_display:str = self.theme_setting.get()
 		selected_internal:str = self.inverse_theme_map.get(selected_display, "light")
@@ -775,10 +760,10 @@ class Menu:
 
 		self.apply_theme()
 
-		logging.info("[on_theme()] done!")
+		logging.info("Done!")
 
 	def music_config(self) -> None:
-		logging.info("[music_config()] running...")
+		logging.info("Running...")
 
 		def on_volume(e=None) -> None:
 			vol:float = int(self.volume_scale.get()) / 100
@@ -802,7 +787,7 @@ class Menu:
 					mixer.music.load(path)
 					mixer.music.play(loops=-1)
 				except Exception as e:
-					logging.error(f"[music_config()] Error loading title music:\n  {e}")
+					logging.error(f"Error loading title music:\n  {e}")
 			else:  # cards
 				self.cards_music_label.config(text=f"{self.tr('cards_music')} ({short})")
 			# leave cards music unloaded until cards screen
@@ -865,7 +850,7 @@ class Menu:
 		self.back_button = ttk.Button(root, text=self.tr("back"), command=lambda: self.change(self.settings))
 		self.back_button.pack(pady=(25, 0))
 
-		logging.info("[music_config()] done!")
+		logging.info("Done!")
 
 	def setup(self) -> None:
 		self.title_label = ttk.Label(root, text=self.tr("setup"), font=("Impact", 36))
@@ -937,7 +922,7 @@ class Menu:
 		self.copyright_label.pack(pady=(10,0))
 
 	def resync_setup_values(self, initial:bool=False) -> None:
-		logging.info("[resync_setup_values()] running...")
+		logging.info("Running...")
 		if initial:
 			self.last_jaar:str = self.settings_var["last_session"]["jaar"].get()
 			self.last_niveau:str = self.settings_var["last_session"]["niveau"].get()
@@ -959,13 +944,13 @@ class Menu:
 				elif not self.last_vak == "Selecteer schoolvak":
 					self.last_vak = "Selecteer schoolvak"
 					self.settings_var["last_session"]["vak"].set(self.last_vak)
-					logging.debug(f"[resync_setup_values()] '{self.last_vak}' not in '{list(self.structure[self.last_jaar][self.last_niveau].keys())}'")
+					logging.debug(f"'{self.last_vak}' not in '{list(self.structure[self.last_jaar][self.last_niveau].keys())}'")
 			elif not self.last_niveau == "Selecteer onderwijsniveau":
 				self.last_niveau = "Selecteer onderwijsniveau"
 				self.settings_var["last_session"]["niveau"].set(self.last_niveau)
 				self.last_vak = "Selecteer leerjaar"
 				self.settings_var["last_session"]["vak"].set(self.last_vak)
-				logging.debug(f"[resync_setup_values()] '{self.last_niveau}' not in '{list(self.structure[self.last_jaar].keys())}'")
+				logging.debug(f"'{self.last_niveau}' not in '{list(self.structure[self.last_jaar].keys())}'")
 		elif not self.last_jaar == "Selecteer leerjaar":
 			self.last_jaar = "Selecteer leerjaar"
 			self.settings_var["last_session"]["jaar"].set(self.last_jaar)
@@ -973,12 +958,12 @@ class Menu:
 			self.settings_var["last_session"]["niveau"].set(self.last_niveau)
 			self.last_vak = "Selecteer schoolvak"
 			self.settings_var["last_session"]["vak"].set(self.last_vak)
-			logging.debug(f"[resync_setup_values()] '{self.last_jaar}' not in '{list(self.structure.keys())}'")
+			logging.debug(f"'{self.last_jaar}' not in '{list(self.structure.keys())}'")
 
-		logging.info("[resync_setup_values()] done!")
+		logging.info("Done!")
 
 	def on_jaar_select(self, event:tk.Event) -> None:
-		logging.info("[on_jaar_select()] running...")
+		logging.info("Running...")
 
 		self.last_jaar = self.jaar_select.get()
 		self.niveau_select.config(state="readonly")
@@ -993,13 +978,13 @@ class Menu:
 		self.paragraph_select.delete(0, tk.END)
 		self.paragraph_select.config(state="disabled")
 
-		logging.debug(f"[on_jaar_select()] jaar_select.get() = {self.jaar_select.get()}")
+		logging.debug(f"jaar_select.get() = {self.jaar_select.get()}")
 		self.resync_setup_values()
 
-		logging.info("[on_jaar_select()] done!")
+		logging.info("Done!")
 
 	def on_niveau_select(self, event:tk.Event) -> None:
-		logging.info("[on_niveau_select()] running...")
+		logging.info("Running...")
 
 		self.last_niveau = self.niveau_select.get()
 		self.vak_select.config(state="readonly")
@@ -1013,10 +998,10 @@ class Menu:
 
 		self.resync_setup_values()
 
-		logging.info("[on_niveau_select()] done!")
+		logging.info("Done!")
 
 	def on_vak_select(self, event:tk.Event) -> None:
-		logging.info("[on_vak_select()] running...")
+		logging.info("Running...")
 
 		self.last_vak = self.vak_select.get()
 		self.chapter_select.config(state="normal")
@@ -1029,10 +1014,10 @@ class Menu:
 
 		self.resync_setup_values()
 
-		logging.info("[on_vak_select()] done!")
+		logging.info("Done!")
 
 	def on_chapter_select(self, event:tk.Event) -> None:
-		logging.info("[on_chapter_select()] running...")
+		logging.info("Running...")
 
 		self.selected_chapter = self.chapter_select.get(event.widget.curselection())  # type: ignore
 		self.paragraph_select.config(state="normal")
@@ -1043,10 +1028,10 @@ class Menu:
 
 		self.resync_setup_values()
 
-		logging.info("[on_chapter_select()] done!")
+		logging.info("Done!")
 
 	def on_paragraph_select(self, event:tk.Event) -> None:
-		logging.info("[on_chapter_select()] running...")
+		logging.info("Running...")
 
 		self.selected_paragraphs = [self.paragraph_select.get(i) for i in self.paragraph_select.curselection()]
 
@@ -1057,7 +1042,7 @@ class Menu:
 
 		self.resync_setup_values()
 
-		logging.info("[on_chapter_select()] done!")
+		logging.info("Done!")
 	
 	def on_continue_setup(self):
 		# lambda: self.change(self.advanced_setup) if self.settings_var["advanced_setup"].get() else self.cards_setup()
@@ -1142,22 +1127,22 @@ class Menu:
 
 	# ------ Cards Logic & Gameplay ------
 	def cards_setup(self) -> None:
-		logging.info("[cards_setup()] running...")
+		logging.info("Running...")
 
 		self.build_deck()
 		if len(self.deck) > 100:
-			logging.info("[cards_setup()] Deck contains over 100 cards.")
+			logging.info("Deck contains over 100 cards.")
 			if not messagebox.askokcancel("Large deck", "Your chosen deck contains over 100 cards.\nDo you wish to continue anyways?"):
-				logging.info("[cards_setup()] Cancelled large deck")
+				logging.info("Cancelled large deck")
 				self.change(self.setup)
 				return
 
 
-		logging.info("[cards_setup()] done!")
+		logging.info("Done!")
 		self.change(self.cards)
 
 	def build_deck(self) -> None:
-		logging.info("[build_deck()] running...")
+		logging.info("Running...")
 		paragraphs = self.structure[self.last_jaar][self.last_niveau][self.last_vak][self.selected_chapter]
 		deck_one = []
 		deck_two = []
@@ -1188,14 +1173,14 @@ class Menu:
 		random.shuffle(deck_two)
 
 		self.deck = deck_one + deck_two
-		logging.debug(f"[build_deck()] deck_one: \"{deck_one}\",\ndeck_two: \"{deck_two}\",\nself.deck\"{self.deck}\"")
+		logging.debug(f"deck_one: \"{deck_one}\",\ndeck_two: \"{deck_two}\",\nself.deck\"{self.deck}\"")
 		self.total_cards = len(self.deck)
 		self.log_correct = []
 		self.log = []
 		self.side = 0
 		self.flipped = False
 
-		logging.info("[build_deck()] done!")
+		logging.info("Done!")
 
 	def cards(self) -> None:
 		self.title_label = ttk.Label(root, text=self.tr("flashcards"), font=("Impact", 36))
@@ -1232,36 +1217,36 @@ class Menu:
 		self.copyright_label.pack(pady=(10,0))
 
 	def on_flip(self) -> None:
-		logging.info("[on_flip()] running...")
+		logging.info("Running...")
 
 		self.flipped = True
 		self.side = 1 if self.side == 0 else 0
-		logging.debug(f"[on_flip()] self.side = {self.side}")
+		logging.debug(f"self.side = {self.side}")
 		self.card_label.config(text=self.deck[0][self.side])
 
 		self.correct_button.grid(row=0, column=0)
 		self.wrong_button.grid(row=0, column=1)
 
-		logging.info("[on_flip()] done!")
+		logging.info("Done!")
 
 	def on_correct(self) -> None:
-		logging.info("[on_correct()] running...")
+		logging.info("Running...")
 
 		if self.deck[0] in self.log or (self.deck[0][1], self.deck[0][0]) in self.log:
 			self.log_correct.append(self.deck[0])
-			logging.debug(f"[on_correct()] Card {self.deck[0]} added to log_correct.")
+			logging.debug(f"Card {self.deck[0]} added to log_correct.")
 		else:
 			self.log.append(self.deck[0])
-			logging.debug(f"[on_correct()] Card {self.deck[0]} added to log.")
+			logging.debug(f"Card {self.deck[0]} added to log.")
 		self.deck.remove(self.deck[0])
 
-		logging.debug(f"[on_wrong()] Logs:\n  Log:\n	{self.log}\n  Log correct:\n	{self.log_correct}")
+		logging.debug(f"Logs:\n  Log:\n	{self.log}\n  Log correct:\n	{self.log_correct}")
 
 		self.side = 0
 		self.flipped = False
 
 		self.progress_bar["value"] += 1
-		logging.info(f"[on_correct()] progress: {self.progress_bar["value"]}/{self.progress_bar["maximum"]}")
+		logging.info(f"progress: {self.progress_bar["value"]}/{self.progress_bar["maximum"]}")
 
 		if len(self.deck) > 0:
 			self.card_label.config(text=self.deck[0][0])
@@ -1269,13 +1254,13 @@ class Menu:
 				self.correct_button.grid_remove()
 				self.wrong_button.grid_remove()
 
-			logging.info("[on_correct()] done!")
+			logging.info("Done!")
 		else:
-			logging.info("[on_correct()] done!")
+			logging.info("Done!")
 			self.change(self.finish)
 
 	def on_wrong(self) -> None:
-		logging.info("[on_wrong()] running...")
+		logging.info("Running...")
 
 		if not self.settings_var["infinite"].get():
 			self.deck.remove(self.deck[0])
@@ -1283,7 +1268,7 @@ class Menu:
 		else:
 			self.deck.append(self.deck.pop(0))
 
-		logging.debug(f"[on_wrong()] Logs:\n  Log:\n	{self.log}\n  Log correct:\n	{self.log_correct}")
+		logging.debug(f"Logs:\n  Log:\n	{self.log}\n  Log correct:\n	{self.log_correct}")
 
 		self.side = 0
 		self.flipped = False
@@ -1296,16 +1281,16 @@ class Menu:
 		else:
 			self.change(self.finish)
 
-		logging.info("[on_wrong()] done!")
+		logging.info("Done!")
 
 	def on_cards_exit(self) -> None:
-		logging.info("[on_cards_exit()] running...")
+		logging.info("Running...")
 		if messagebox.askyesno("Confirm exit", "Are you sure you want to exit?\nYour progess won't be saved."):
-			logging.info("[on_cards_exit()] confirmed exit")
+			logging.info("Confirmed exit")
 			self.change(self.main)
 		else:
-			logging.info("[on_cards_exit()] cancelled exit")
-		logging.info("[on_cards_exit()] done!")
+			logging.info("Cancelled exit")
+		logging.info("Done!")
 
 	def finish(self) -> None:
 		self.title_label = ttk.Label(root, text=self.tr("finish"), font=("Impact", 36))
@@ -1327,15 +1312,16 @@ class Menu:
 		self.copyright_label = ttk.Label(root, text="Copyright © Raoul van Zomeren. All rights reserved.", font=("Arial", 10, "italic"))
 		self.copyright_label.pack(pady=(10,0))
 
-	def on_closing(self) -> None:
-		logging.info("[on_closing()] running...")
+	def on_closing(self, force:bool=False) -> None:
+		logging.info("Running...")
 
-		with open("settings.json", "w+", encoding="utf-8") as f:
-			json.dump(serialize_settings(self.settings_var), f, indent=4, ensure_ascii=False)
+		if not force:
+			with open("settings.json", "w+", encoding="utf-8") as f:
+				json.dump(serialize_settings(self.settings_var), f, indent=4, ensure_ascii=False)
 
 		root.destroy()
 
-		logging.info("[on_closing()] done!")
+		logging.info("Done!")
 
 # ------ Program Start ------
 if __name__ == "__main__":
@@ -1344,7 +1330,4 @@ if __name__ == "__main__":
 		root.protocol("WM_DELETE_WINDOW", program.on_closing)
 		tk.mainloop()
 	else:
-		logging.error("Unsupported OS detected...")
-		root.withdraw()
-		messagebox.showerror("MacOS not supported", f"Flashcards© v{version} does not support MacOS.\nIf you want to make it work, download the nonexistant MacOS version instead.")
-		sys.exit()
+		program = Menu(True)
