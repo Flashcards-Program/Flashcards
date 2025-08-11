@@ -17,9 +17,9 @@ WIDTH, HEIGHT = 800, 600
 
 # - Github Info -
 GITHUB_API:str = "https://api.github.com"
-OWNER, REPO = "Doglover1219", "Flashcards"
-VERSIONS_JSON_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards-Vakken/refs/heads/main/versions.json"
-VAKKEN_DIRECTORY_URL:str = "https://raw.githubusercontent.com/Doglover1219/Flashcards/refs/heads/main/Vakken"
+OWNER, REPO = "Flashcards-Program", "Flashcards"
+LATEST_JSON_URL:str = "https://raw.githubusercontent.com/{OWNER}/Flashcards/refs/heads/main/latest.json"
+VAKKEN_DIRECTORY_URL:str = "https://raw.githubusercontent.com/{OWNER}/Flashcards/refs/heads/main/Vakken"
 
 # --- Variables ---
 # - Versioning -
@@ -36,7 +36,7 @@ style = ttk.Style()
 # ------ Logging Setup ------
 logging.basicConfig(
 	level=logging.INFO if not DEV_MODE else logging.DEBUG,
-	format="[{levelname:<8}][{filename:<17}:{lineno:<4d} - {funcName:>20}()] {message}",
+	format="[{levelname:<8}][{filename:>17}:{lineno:<4d} - {funcName:>18}()] {message}",
 	style="{",
 	handlers=[
 		logging.FileHandler("latest.log", mode="w", encoding="utf-8"),
@@ -62,9 +62,8 @@ def load_ini_file() -> str|None:
 GITHUB_TOKEN:str|None = load_ini_file()
 
 def fetch_versions_json() -> dict:
-	"""Load versions.json (publicly hosted, but private–repo headers applied)."""
-	headers:dict[str, str] = {"Authorization": f"token {GITHUB_TOKEN}"}
-	resp:requests.Response = requests.get(VERSIONS_JSON_URL, headers=headers)
+	"""Load versions.json"""
+	resp:requests.Response = requests.get(LATEST_JSON_URL)
 	try:
 		resp.raise_for_status()
 	except HTTPError as e:
