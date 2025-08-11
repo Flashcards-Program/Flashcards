@@ -1,15 +1,18 @@
-# Ignore everything...
 *
 
-# Except flashcards.py and .gitignore, and...
+# Included Files
 !flashcards.py
+!latest.json
+
+!silence.mp3
 !.gitignore
 
-# ...the languages directory and specific language files
+!README.md
+!LICENCE
+
+# Included Folders
 !languages/
 languages/*
 
-!languages/en_US.json
-!languages/fr_FR.json
-!languages/nl_NL.json
-!languages/tr_TR.json
+!.github/
+!.github/**
