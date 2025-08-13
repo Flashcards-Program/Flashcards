@@ -2,7 +2,7 @@
 
 # Included Files
 !flashcards.py
-!latest.json
+!versions.json
 
 !silence.mp3
 !.gitignore

@@ -2,12 +2,6 @@
 
 Flashcards is een programma ontwikkeld door mij, Raoul van Zomeren, om leerlingen van Het Passer College Lage Land (Rotterdam, Nederland) te helpen bij het leren voor aankomende toetsen.
 
-## Credits
-
-De volgende personen helpen momenteel mee aan de ontwikkeling van Flashcards.
-
-***To be Continued***
-
 ## Licentie
 
 Dit project valt onder de [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/deed.nl) licentie.

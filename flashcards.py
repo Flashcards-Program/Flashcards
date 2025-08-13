@@ -1,10 +1,12 @@
 # Copyright © Raoul van Zomeren. All rights reserved.
 
 # ------ Imports ------
-from httpx import HTTPError
+from cycler import V
 import requests, random, json, sys, platform, configparser, os, logging, threading, typing, pygame
 import tkinter as tk
 from pygame import mixer
+from httpx import HTTPError
+from packaging.version import Version
 from tkinter import ttk, messagebox, filedialog
 
 # ------ Info & Initialization ------
@@ -14,20 +16,17 @@ from tkinter import ttk, messagebox, filedialog
 DEV_MODE:bool = True
 PLAYTEST:int = 1 # Playtest number, 0 for release, 1 for first playtest, etc.
 WIDTH, HEIGHT = 800, 600
+VERSION, VERSION_NAME = "1.0.0", "The Launching Update"
 
 # - Github Info -
 GITHUB_API:str = "https://api.github.com"
 OWNER, REPO = "Flashcards-Program", "Flashcards"
 LATEST_JSON_URL:str = f"https://raw.githubusercontent.com/{OWNER}/Flashcards/refs/heads/main/latest.json"
-VAKKEN_DIRECTORY_URL:str = f"https://raw.githubusercontent.com/{OWNER}/Flashcards/refs/heads/main/Vakken"
-
-# --- Variables ---
-# - Versioning -
-version, version_name = "1.0.0", "The Launching Update"
+VAKKEN_DIRECTORY_URL:str = f"https://raw.githubusercontent.com/{OWNER}/Flashcards-Vakken/refs/heads/main/Vakken"
 
 # --- Tkinter Initialization ---
 root = tk.Tk()
-root.title(f"Flashcards© v{version}{f"-p{PLAYTEST}" if PLAYTEST else ""}: {version_name}")
+root.title(f"Flashcards© v{VERSION}{f"-p{PLAYTEST}" if PLAYTEST else ""}: {VERSION_NAME}")
 root.minsize(WIDTH, HEIGHT)
 root.geometry(f"{WIDTH}x{HEIGHT}")
 
@@ -73,30 +72,23 @@ def fetch_versions_json() -> dict:
 
 	return resp.json()
 
-def get_latest_version() -> str:
-	"""Return the latest release version from versions.json."""
-	data = fetch_versions_json()
-	return data.get("program", "")
+VERSIONS_JSON:dict = fetch_versions_json()
+LATEST_VERSION:str = VERSIONS_JSON.get("latest", VERSION)
 
-
-def check_update_available() -> tuple[bool|None,str|None]:
+def check_update_available(current:str, latest:str) -> tuple[bool, str]:
 	"Checks if the latest version is greater than the current. And shows it if so."
-	latest = get_latest_version()
-	if latest:
-		latest_split, current, old = list(map(int, latest.split("."))), list(map(int, version.split("."))), False
-		if latest_split[0] < current[0]:
-			old = True
-		elif latest_split[1] < current[1]:
-			old = True
-		elif latest_split[1] == current[1] and latest_split[2] < current[2]:
-			old = True
+	try:
+		current_version = Version(current)
+		latest_version = Version(latest)
+	except Exception:
+		return False, current
+	
+	logging.debug(f"Current: {current_version} | Latest: {latest_version}")
 
-		if old:
-			return True, latest
-		else:
-			return False, None
+	if latest_version > current_version:
+		return True, latest
 	else:
-		return None, None
+		return False, current
 
 def get_splashtext():
 	url = "https://raw.githubusercontent.com/Doglover1219/Flashcards-release/refs/heads/main/splash.json"
@@ -109,7 +101,7 @@ def get_splashtext():
 		return splashtext_data
 	else:
 		logging.error(f"Error: Received status code {response.status_code} from server")
-		return ["ERROR: No Splashtext could be retrieved."]
+		return ["ERROR: Server returned an error."]
 
 def setdefault_advanced(collection: dict|list, key, default_value):
 	def _merge(current, default) -> dict|list:
@@ -184,7 +176,7 @@ class Menu:
 
 	def finish_init(self) -> None:
 		# --- Get Latest Update and Generate Splashtext ---
-		self.update_available:tuple[bool|None,str|None] = check_update_available()
+		self.update_available:tuple[bool,str] = check_update_available(LATEST_VERSION, VERSION)
 		self.splashtext_array = get_splashtext()
 
 		# --- Setup Settings ---
@@ -603,13 +595,13 @@ class Menu:
 		self.copyright_label.pack(pady=(10,0))
 
 	def main(self) -> None:
-		self.title_label = ttk.Label(root, text=f"Flashcards© v{version}{f"-p{PLAYTEST}" if PLAYTEST else ""}", font=("Impact", 36))
+		self.title_label = ttk.Label(root, text=f"Flashcards© v{VERSION}{f"-p{PLAYTEST}" if PLAYTEST else ""}", font=("Impact", 36))
 		self.title_label.pack(pady=(20,0))
 
 		if self.update_available[0]:
-			self.subtitle_label = ttk.Label(root, text=f"{self.tr("update_available")} ({version} → {self.update_available[1]})", font=("Helvetica", 20, "bold"))
+			self.subtitle_label = ttk.Label(root, text=f"{self.tr("update_available")} ({VERSION} → {self.update_available[1]})", font=("Helvetica", 20, "bold"))
 		else:
-			self.subtitle_label = ttk.Label(root, text=f"{version_name}", font=("Helvetica", 24, "bold"))
+			self.subtitle_label = ttk.Label(root, text=f"{VERSION_NAME}", font=("Helvetica", 24, "bold"))
 		self.subtitle_label.pack(pady=(0,5))
 
 		splash = random.choice(self.splashtext_array)
@@ -667,7 +659,6 @@ class Menu:
 		self.theme_setting.bind("<<ComboboxSelected>>", self.on_theme)
 		self.theme_setting.grid(row=0, column=1)
 
-
 		self.language_label = ttk.Label(setup_frame, text=f"{self.tr("language")}")
 		self.language_label.grid(row=1,column=0)
 
@@ -689,7 +680,6 @@ class Menu:
 
 		self.back_button = ttk.Button(exit_frame, text=self.tr("back"), command=back)
 		self.back_button.grid(row=0, column=1)
-
 
 		exit_frame.pack(pady=(25,0))
 
@@ -725,10 +715,10 @@ class Menu:
 		"""
 		logging.info("[get_available_versions] Running...")
 		try:
-			data = fetch_versions_json()
+			data:dict = fetch_versions_json()
 			key = "playtest" if PLAYTEST else "releases"
 			logging.info("[get_available_versions] Done!")
-			return data.get("versions", {}).get(key, [])
+			return data.get("older", {}).get(key, [])
 		except Exception as e:
 			logging.error(f"[get_available_versions] {e}")
 			logging.info("[get_available_versions] Done!")
@@ -1135,7 +1125,6 @@ class Menu:
 				logging.info("Cancelled large deck")
 				self.change(self.setup)
 				return
-
 
 		logging.info("Done!")
 		self.change(self.cards)
