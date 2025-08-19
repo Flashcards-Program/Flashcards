@@ -19,10 +19,10 @@ WIDTH, HEIGHT = 800, 600
 VERSION, VERSION_NAME = "1.0.0", "The Launching Update"
 
 # - Github Info -
-GITHUB_API:str = "https://api.github.com"
-OWNER, REPO = "Flashcards-Program", "Flashcards"
-LATEST_JSON_URL:str = f"https://raw.githubusercontent.com/{OWNER}/Flashcards/refs/heads/main/latest.json"
-VAKKEN_DIRECTORY_URL:str = f"https://raw.githubusercontent.com/{OWNER}/Flashcards-Vakken/refs/heads/main/Vakken"
+OWNER, REPO, VAKKEN_REPO = "Flashcards-Program", "Flashcards", "Flashcards-Vakken"
+LATEST_JSON_URL:str = f"https://raw.githubusercontent.com/{OWNER}/{REPO}/refs/heads/main/versions.json"
+SPLASH_JSON_URL:str = f"https://raw.githubusercontent.com/{OWNER}/{REPO}/refs/heads/main/splash.json"
+VAKKEN_DIRECTORY_URL:str = f"https://api.github.com/{OWNER}/{VAKKEN_REPO}/refs/heads/main/Vakken"
 
 # --- Tkinter Initialization ---
 root = tk.Tk()
@@ -34,8 +34,8 @@ style = ttk.Style()
 
 # ------ Logging Setup ------
 logging.basicConfig(
-	level=logging.INFO if not DEV_MODE else logging.DEBUG,
-	format="[{levelname:<8}][{filename:>17}:{lineno:<4d} - {funcName:>18}()] {message}",
+	level=logging.DEBUG,
+	format="[{levelname:<8}][{filename:>21}:{lineno:<4d} - {funcName:>18}()] {message}",
 	style="{",
 	handlers=[
 		logging.FileHandler("latest.log", mode="w", encoding="utf-8"),
@@ -91,11 +91,7 @@ def check_update_available(current:str, latest:str) -> tuple[bool, str]:
 		return False, current
 
 def get_splashtext():
-	url = "https://raw.githubusercontent.com/Doglover1219/Flashcards-release/refs/heads/main/splash.json"
-	headers:dict[str, str] = {
-		"Authorization": f"token {GITHUB_TOKEN}"
-	}
-	response:requests.Response = requests.get(url, headers=headers)
+	response:requests.Response = requests.get(SPLASH_JSON_URL)
 	if response.status_code == 200:
 		splashtext_data = response.json()
 		return splashtext_data
@@ -238,33 +234,27 @@ class Menu:
 		self.inverse_theme_map:dict[str, str] = {v: k for k, v in self.theme_map.items()}
 		logging.info("Done!")
 
-	def download_version(self, target_version: str) -> None:
+	def download_version(self, target_version:str) -> None:
 		"""
 		Authenticated download via GitHub Releases API.
 		"""
 		logging.info("Running...")
 
-		if target_version[-2] == "p":   # e.g., v1.0.0-p1
-			tag:str = target_version[0:-4]
-		elif target_version[-3] == "p": # e.g., v1.0.0-p12
-			tag:str = target_version[0:-5]
-		else:                           # e.g., v1.0.0
-			tag:str = target_version[0:-2]
-		# tag = v{X}.{Y}
-		logging.debug(f"tag set to: {tag}")
+		# tag = target_version (= f"{X}.{Y}.{Z}")
+		logging.debug(f"tag set to: {target_version}")
 
-		filename:str = f"flashcards.{target_version}.exe"
+		filename:str = f"flashcards.v{target_version}.exe"
 		api_headers:dict[str, str] = {
 			"Authorization": f"token {GITHUB_TOKEN}",
 			"Accept": "application/vnd.github.v3+json"
 		}
 
 		# 1) Fetch release by tag
-		rel_url:str = f"{GITHUB_API}/repos/{OWNER}/{REPO}/releases/tags/{tag}"
+		rel_url:str = f"https:api.github.com/repos/{OWNER}/{REPO}/releases/tags/{target_version}"
 		resp:requests.Response = requests.get(rel_url, headers=api_headers)
 		if resp.status_code == 404:
-			messagebox.showerror("Error", f"No release found for tag '{tag}'.")
-			logging.error(f"No release for tag '{tag}' → 404")
+			messagebox.showerror("Error", f"No release found for tag '{target_version}'.")
+			logging.error(f"No release for tag '{target_version}' → 404")
 			return
 		resp.raise_for_status()
 		release = resp.json()
@@ -273,12 +263,12 @@ class Menu:
 		asset = next((a for a in release["assets"] if a["name"] == filename), None)
 		if not asset:
 			messagebox.showerror("Error",
-				f"Release '{tag}' has no asset named:\n{filename}")
-			logging.error(f"Asset '{filename}' missing in release '{tag}'")
+				f"Release '{target_version}' has no asset named:\n{filename}")
+			logging.error(f"Asset '{filename}' missing in release '{target_version}'")
 			return
 
 		# 3) Download the asset via its API endpoint
-		download_url:str = f"{GITHUB_API}/repos/{OWNER}/{REPO}/releases/assets/{asset['id']}"
+		download_url:str = f"https:api.github.com/repos/{OWNER}/{REPO}/releases/assets/{asset['id']}"
 		dl_headers:dict[str, str] = {
 			"Authorization": f"token {GITHUB_TOKEN}",
 			"Accept": "application/octet-stream"}
@@ -387,7 +377,7 @@ class Menu:
 
 		logging.info("Done!")
 
-	def settings_exists(self) -> dict:
+	def settings_exists(self) -> dict[str, tk.Variable|dict[str, tk.Variable]]:
 		logging.info("Running...")
 
 		try:
@@ -443,7 +433,7 @@ class Menu:
 		"""Fetch the entire Vakken folder structure from GitHub into a nested dict."""
 		logging.info("Running...")
 
-		API_BASE:str = f"https://api.github.com/repos/Doglover1219/Flashcards-Vakken/contents/Vakken"
+		API_BASE:str = f"https://api.github.com/repos/{OWNER}/{VAKKEN_REPO}/contents/Vakken"
 		headers:dict[str, str] = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 		def get_contents(path:str="") -> list:
@@ -760,7 +750,7 @@ class Menu:
 			self.volume_label.config(text=f"{int(vol*100)}/100")
 			mixer.music.set_volume(vol)
 
-		def on_music_select(music_type:typing.Literal["title", "cards"]):
+		def on_music_select(music_type:typing.Literal["title", "cards"]) -> None:
 			filetypes:list[tuple[str, str]] = [(self.tr("music_select_dialogue.files"), "*.mp3 *.wav *.ogg")]
 			path:str = filedialog.askopenfilename(title=self.tr("music_select_dialogue"), filetypes=filetypes)
 			if not path:
@@ -797,7 +787,7 @@ class Menu:
 		self.volume_label = ttk.Label(vol_frame, text=f"{self.tr('volume')}")
 		self.volume_label.grid(row=0, column=0)
 
-		initial = self.settings_var["music"]["volume"].get()
+		initial:int = self.settings_var["music"]["volume"].get()
 		self.volume_scale = ttk.Scale(vol_frame, from_=0, to=100, length=500, command=on_volume)
 		self.volume_scale.set(initial)
 		self.volume_scale.grid(row=0, column=1)
