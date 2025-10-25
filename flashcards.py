@@ -3,22 +3,14 @@
 from __future__ import annotations
 
 # ------ Imports ------
-import json
-import logging
-import os
-import platform
-import random
-import sys
-import threading
-import typing
-import configparser
+import json, logging, os, random, sys, threading, typing, configparser, pygame, requests
 
-import pygame
-import requests
 import tkinter as tk
+
 from packaging.version import Version
 from pygame import mixer
 from tkinter import ttk, messagebox, filedialog
+from PIL import Image, ImageTk
 
 # ------ Info & Initialization ------
 
@@ -30,18 +22,12 @@ VERSION, VERSION_NAME = "1.0.0", "The Launching Update"
 
 # - Github Info -
 OWNER, REPO, VAKKEN_REPO = "Flashcards-Program", "Flashcards", "Flashcards-Vakken"
-LATEST_JSON_URL: str = (
-    f"https://raw.githubusercontent.com/{OWNER}/{REPO}/refs/heads/main/versions.json"
-)
-SPLASH_JSON_URL: str = (
-    f"https://raw.githubusercontent.com/{OWNER}/{REPO}/refs/heads/main/splash.json"
-)
+LATEST_JSON_URL: str = f"https://raw.githubusercontent.com/{OWNER}/{REPO}/refs/heads/main/versions.json"
+SPLASH_JSON_URL: str = f"https://raw.githubusercontent.com/{OWNER}/{REPO}/refs/heads/main/splash.json"
 
 # --- Tkinter Initialization ---
 root = tk.Tk()
-root.title(
-    f"Flashcards© v{VERSION}{f'-p{PLAYTEST}' if PLAYTEST else ''}: {VERSION_NAME}"
-)
+root.title(f"Flashcards© v{VERSION}{f'-p{PLAYTEST}' if PLAYTEST else ''}: {VERSION_NAME}")
 root.minsize(WIDTH, HEIGHT)
 root.geometry(f"{WIDTH}x{HEIGHT}")
 
@@ -55,7 +41,7 @@ logging.basicConfig(
     handlers=[
         logging.FileHandler("latest.log", mode="w", encoding="utf-8"),
         logging.StreamHandler(sys.stdout),
-    ],
+    ]
 )
 
 # ------ Helper Functions ------
@@ -67,16 +53,6 @@ def resource_path(relative_path: str) -> str:
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
-
-def load_ini_file() -> str | None:
-    config = configparser.ConfigParser()
-    config.read(resource_path("config.ini"))
-    return config.get("github", "token", fallback=None)
-
-
-GITHUB_TOKEN: str | None = load_ini_file()
-
 
 def fetch_versions_json() -> dict:
     """Load versions.json."""
@@ -270,17 +246,11 @@ class Menu:
         logging.debug(f"tag set to: {target_version}")
 
         filename: str = f"flashcards.v{target_version}.exe"
-        api_headers: dict[str, str] = {
-            "Authorization": f"token {GITHUB_TOKEN}" if GITHUB_TOKEN else "",
-            "Accept": "application/vnd.github.v3+json",
-        }
 
         # 1) Fetch release by tag
-        rel_url: str = (
-            f"https://api.github.com/repos/{OWNER}/{REPO}/releases/tags/{target_version}"
-        )
+        rel_url: str = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/tags/{target_version}"
         try:
-            resp: requests.Response = requests.get(rel_url, headers=api_headers, timeout=30)
+            resp: requests.Response = requests.get(rel_url, timeout=30)
             if resp.status_code == 404:
                 messagebox.showerror("Error", f"No release found for tag '{target_version}'.")
                 logging.error(f"No release for tag '{target_version}' → 404")
@@ -305,12 +275,8 @@ class Menu:
         download_url: str = (
             f"https://api.github.com/repos/{OWNER}/{REPO}/releases/assets/{asset['id']}"
         )
-        dl_headers: dict[str, str] = {
-            "Authorization": f"token {GITHUB_TOKEN}" if GITHUB_TOKEN else "",
-            "Accept": "application/octet-stream",
-        }
         try:
-            r2: requests.Response = requests.get(download_url, headers=dl_headers, stream=True, timeout=60)
+            r2: requests.Response = requests.get(download_url, stream=True, timeout=60)
             r2.raise_for_status()
         except requests.RequestException as e:
             messagebox.showerror("Download Failed", str(e))
@@ -465,12 +431,11 @@ class Menu:
         logging.info("Running...")
 
         API_BASE: str = f"https://api.github.com/repos/{OWNER}/{VAKKEN_REPO}/contents/Vakken"
-        headers: dict[str, str] = {"Authorization": f"token {GITHUB_TOKEN}"} if GITHUB_TOKEN else {}
 
         def get_contents(path: str = "") -> list:
             url: str = f"{API_BASE}/{path}" if path else API_BASE
             try:
-                r: requests.Response = requests.get(url, headers=headers, timeout=30)
+                r: requests.Response = requests.get(url, timeout=30)
                 r.raise_for_status()
                 return r.json() if r.status_code == 200 else []
             except requests.RequestException as e:
@@ -1065,10 +1030,10 @@ class Menu:
     def cards_setup(self) -> None:
         logging.info("Running...")
         self.build_deck()
-        if len(self.deck) > 100:
-            logging.info("Deck contains over 100 cards.")
+        if len(self.deck) > 120:
+            logging.info("Deck contains over 120 cards.")
             if not messagebox.askokcancel(
-                "Large deck", "Your chosen deck contains over 100 cards.\nDo you wish to continue anyways?"
+                "Large deck", "Your chosen deck contains over 120 cards.\nDo you wish to continue anyways?"
             ):
                 logging.info("Cancelled large deck")
                 self.change(self.setup)
