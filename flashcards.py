@@ -18,7 +18,7 @@ from PIL import Image, ImageTk
 DEV_MODE: bool = False
 PLAYTEST: int = 0  # 0 for release, 1 for first playtest, etc.
 WIDTH, HEIGHT = 800, 600
-VERSION, VERSION_NAME = "1.0.0", "The Launching Update"
+VERSION, VERSION_NAME = "1.0.1", "The Launching Update"
 
 # - Github Info -
 OWNER, REPO, VAKKEN_REPO = "Flashcards-Program", "Flashcards", "Flashcards-Vakken"
@@ -34,18 +34,23 @@ root.geometry(f"{WIDTH}x{HEIGHT}")
 style = ttk.Style()
 
 # ------ Logging Setup ------
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+log_path = os.path.join(base_dir, "latest.log")
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="[{levelname:<8}][{filename:>21}:{lineno:<4d} - {funcName:>18}()] {message}",
     style="{",
     handlers=[
-        logging.FileHandler("latest.log", mode="w", encoding="utf-8"),
+        logging.FileHandler(log_path, mode="w", encoding="utf-8"),
         logging.StreamHandler(sys.stdout),
     ]
 )
 
 # ------ Helper Functions ------
-
 def resource_path(relative_path: str) -> str:
     """Get absolute path to resource, works for dev and for PyInstaller .exe."""
     try:
@@ -1205,4 +1210,5 @@ class Menu:
 if __name__ == "__main__":
         program = Menu()
         root.protocol("WM_DELETE_WINDOW", program.on_closing)
+
         tk.mainloop()
